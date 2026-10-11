@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<!-- connect-src: if the Supabase project uses a custom domain, add it here. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
+<title>Cycle phase</title>
+<!--
+  Partner view for Women's Tracker (F-8). No build step: host this file next to
+  partner-decode.js. The link carries the share id and the key after "#"; the
+  browser never sends that part to any server. This page fetches the encrypted
+  copy by id and decrypts it here.
+-->
+<script type="application/json" id="config">
+{
+  "supabaseUrl": "https://zuqrmkcvqnhydtbgatdx.supabase.co",
+  "supabaseAnonKey": "sb_publishable_dT9JuNx_l6sk6YEnZMeZcw_oxou-65B"
+}
+</script>
+<style>
+  :root { --bg: #ffffff; --surface: #f6f1f3; --text: #1f1a1c; --muted: #6b6266; --accent: #b0386a; --accent-soft: #f4c9da; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #141113; --surface: #221d20; --text: #f3eef0; --muted: #b5abaf; --accent: #f08fb5; --accent-soft: #5a2f42; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  h2 { font-size: 19px; margin: 0 0 8px; }
+  p { margin: 0 0 8px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+  .card { background: var(--surface); border-radius: 20px; padding: 16px; margin: 16px 0; }
+  .strip { display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px; margin: 12px 0 8px; }
+  .day { aspect-ratio: 1; border-radius: 4px; background: var(--bg); }
+  .day.logged { background: var(--accent); }
+  .day.estimated { background: var(--accent-soft); }
+  .day.today { outline: 2px solid var(--text); outline-offset: 1px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--swatch); }
+  .range { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cycle phase</h1>
+  <p class="muted" id="status">Loading…</p>
+
+  <section id="view" hidden>
+    <div class="card">
+      <h2 id="phase"></h2>
+      <p id="period"></p>
+    </div>
+    <div class="card">
+      <h2>Next period</h2>
+      <p id="next"></p>
+    </div>
+    <div class="card">
+      <h2>Ten weeks</h2>
+      <div class="strip" id="strip" role="img"></div>
+      <div class="range"><span id="from"></span><span id="to"></span></div>
+      <p class="legend"><span style="--swatch: var(--accent)">Period</span><span style="--swatch: var(--accent-soft)">Estimated period</span></p>
+    </div>
+    <p class="muted small" id="updated"></p>
+    <p class="muted small">Estimates from her own log, not medical advice. Shared privately from Women's Tracker: only the phase is shared, nothing else from her log.</p>
+  </section>
+</main>
+
+<script type="module">
+  import { xchacha20poly1305 } from 'https://cdn.jsdelivr.net/npm/@noble/ciphers@2.4.0/chacha.js';
+  import { openPartnerShare, parseShareFragment } from './partner-decode.js';
+
+  const $ = (id) => document.getElementById(id);
+  const DAY = 24 * 60 * 60 * 1000;
+
+  function fail(text, detail) {
+    $('status').textContent = text;
+    if (detail) {
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.textContent = detail;
+      $('status').after(p);
+    }
+    $('view').hidden = true;
+  }
+
+  // Dates in the payload are local calendar days (YYYY-MM-DD).
+  function parseDay(text) {
+    const [y, m, d] = text.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  function dayString(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+  function addDays(text, n) {
+    const d = parseDay(text);
+    d.setDate(d.getDate() + n);
+    return dayString(d);
+  }
+  function show(text, options = { weekday: 'short', month: 'short', day: 'numeric' }) {
+    return parseDay(text).toLocaleDateString(undefined, options);
+  }
+
+  const PHASES = {
+    menstrual: ['Period days', 'These are her period days.'],
+    follicular: ['After her period', 'The follicular phase: the days after her period.'],
+    luteal: ['Before her next period', 'The luteal phase: the days before her next period.'],
+  };
+
+  function render(payload) {
+    // The phone's own day when this was made; logged days run up to it.
+    const madeOn = dayString(new Date(payload.updatedAt));
+    const today = dayString(new Date());
+    const phase = payload.today.phase && PHASES[payload.today.phase];
+
+    if (payload.today.onPeriod) {
+      $('phase').textContent = 'On her period';
+      $('period').textContent = 'She logged her period today.';
+    } else if (phase) {
+      $('phase').textContent = phase[0];
+      // Period days not logged yet today still read as period days.
+      $('period').textContent = payload.today.phase === 'menstrual' ? phase[1] : `${phase[1]} Not on her period today.`;
+    } else {
+      $('phase').textContent = 'No estimate right now';
+      $('period').textContent = 'Not on her period today.';
+    }
+    if (madeOn !== today) $('period').textContent += ` (As of ${show(madeOn)}.)`;
+
+    const next = payload.nextPeriod;
+    if (!next) {
+      $('next').textContent = 'No estimate right now.';
+    } else if (next.date <= today) {
+      $('next').textContent = 'Her period may start any day now.';
+    } else {
+      const spread = next.windowDays > 0 ? `, give or take ${next.windowDays} day${next.windowDays === 1 ? '' : 's'}` : '';
+      $('next').textContent = `Around ${show(next.date)}${spread}.`;
+    }
+
+    const days = new Set(payload.periodDays);
+    const from = addDays(madeOn, -34);
+    const strip = $('strip');
+    strip.replaceChildren();
+    let logged = 0;
+    let estimated = 0;
+    for (let i = 0; i < 70; i++) {
+      const d = addDays(from, i);
+      const cell = document.createElement('div');
+      cell.className = 'day';
+      if (days.has(d)) {
+        cell.classList.add(d <= madeOn ? 'logged' : 'estimated');
+        if (d <= madeOn) logged++;
+        else estimated++;
+      }
+      if (d === today) cell.classList.add('today');
+      cell.title = show(d);
+      strip.append(cell);
+    }
+    strip.setAttribute(
+      'aria-label',
+      `${logged} period days in the 5 weeks before ${show(madeOn)}, and ${estimated} estimated in the 5 weeks after.`
+    );
+    $('from').textContent = show(from, { month: 'short', day: 'numeric' });
+    $('to').textContent = show(addDays(from, 69), { month: 'short', day: 'numeric' });
+
+    const updated = new Date(payload.updatedAt);
+    const stale = Date.now() - updated.getTime() > 2 * DAY;
+    $('updated').textContent =
+      `Updated ${updated.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}.` +
+      (stale ? ' It updates when she opens her app, so this may be out of date.' : '');
+
+    $('status').textContent = 'Shared with you privately.';
+    $('view').hidden = false;
+  }
+
+  async function load() {
+    const config = JSON.parse($('config').textContent);
+    if (String(config.supabaseUrl).startsWith('FILL IN') || String(config.supabaseAnonKey).startsWith('FILL IN')) {
+      fail('This page isn’t set up yet.');
+      return;
+    }
+    const share = parseShareFragment(location.hash);
+    if (!share) {
+      fail('This link no longer works.', 'She may have stopped sharing. Ask her for a new link.');
+      return;
+    }
+    let rows;
+    try {
+      const headers = { 'Content-Type': 'application/json', apikey: config.supabaseAnonKey };
+      // A legacy anon key is a JWT and goes in both headers; a publishable key only in apikey.
+      if (config.supabaseAnonKey.startsWith('eyJ')) headers.Authorization = `Bearer ${config.supabaseAnonKey}`;
+      const res = await fetch(`${config.supabaseUrl.replace(/\/+$/, '')}/rest/v1/rpc/get_partner_share`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ share_id: share.id }),
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      rows = await res.json();
+    } catch {
+      fail('Couldn’t load this right now.', 'Check your connection and try again.');
+      return;
+    }
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row || typeof row.payload !== 'string') {
+      fail('This link no longer works.', 'She may have stopped sharing. Ask her for a new link.');
+      return;
+    }
+    try {
+      render(openPartnerShare(row.payload, share.key, xchacha20poly1305));
+    } catch {
+      fail('This link no longer works.', 'She may have stopped sharing. Ask her for a new link.');
+    }
+  }
+
+  window.addEventListener('hashchange', () => location.reload());
+  load();
+</script>
+</body>
+</html>
