@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  ScanTray support page. Static page: no scripts, cookies, fonts or trackers.
+  To be published at https://crosstrading.llc/scantray/support/. If ScanTray launches without ScanTray Pro
+  switched on, remove the three subscription questions.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScanTray Support</title>
+<meta name="description" content="Help with ScanTray, the private document scanner.">
+<style>
+  :root { color-scheme: light dark; --bg: #f7f8fc; --surface: #fff; --text: #171d2c; --muted: #566278; --blue: #2859d9; --soft: #eaf0ff; --line: #dfe5f0; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #101622; --surface: #1a2333; --text: #f1f4fc; --muted: #b1bed4; --blue: #a6beff; --soft: #253759; --line: #34415a; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-wrap: anywhere; }
+  main { width: min(780px, calc(100% - 48px)); margin-inline: auto; padding-block: 48px 58px; }
+  h1, h2 { line-height: 1.18; letter-spacing: -.04em; }
+  h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin: 0 0 24px; }
+  h2 { font-size: 24px; margin: 36px 0 18px; }
+  p { margin: 0 0 16px; }
+  ul { padding-left: 24px; }
+  li { margin-bottom: 10px; }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 5px; border-radius: 4px; }
+  .meta, .muted { color: var(--muted); }
+  .meta { font-size: 15px; margin-bottom: 30px; }
+  .summary, .contact { background: var(--soft); border: 1px solid var(--line); border-radius: 22px; padding: 24px 28px; margin: 0 0 32px; }
+  .summary ul { margin-bottom: 0; }
+  .contact p:last-child { margin-bottom: 0; }
+  details { border-bottom: 1px solid var(--line); padding-block: 20px; }
+  summary { cursor: pointer; font-weight: 650; padding: 6px 0; }
+  details p, details ul { margin: 16px 0 8px; }
+  footer { border-top: 1px solid var(--line); padding-top: 30px; margin-top: 48px; color: var(--muted); font-size: 13px; }
+  footer a { display: inline-block; padding-block: 10px; }
+  @media (max-width: 380px) { main { width: calc(100% - 32px); padding-top: 32px; } .summary, .contact { padding: 20px; } }
+  @media print { :root { --bg: #fff; --surface: #fff; --text: #111; --muted: #333; --blue: #111; --soft: #fff; --line: #ccc; } main { width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>ScanTray Support</h1>
+
+  <div class="contact">
+    <p><strong>Email us:</strong> <a href="mailto:support@crosstrading.llc">support@crosstrading.llc</a></p>
+    <p class="muted">We usually reply within 2 business days.</p>
+    <p class="muted">Your documents never leave your phone, so we can't see them. Tell us your phone model, what you did and what happened. Never send a password, passcode or a scan with private information.</p>
+  </div>
+
+  <h2>Questions</h2>
+
+  <details>
+    <summary>How do I cancel or manage my subscription?</summary>
+    <p>Subscriptions are managed by Apple or Google, not in the app.</p>
+    <ul>
+      <li><strong>iPhone:</strong> open Settings, tap your name, then Subscriptions, then ScanTray.</li>
+      <li><strong>Android:</strong> open the Play Store, tap your profile picture, then Payments &amp; subscriptions, then Subscriptions, then ScanTray.</li>
+    </ul>
+    <p>Cancel at least 24 hours before the end of the current period to avoid the next charge.</p>
+  </details>
+
+  <details>
+    <summary>How do I get my subscription back on a new phone?</summary>
+    <p>Sign in with the same Apple Account or Google account, open ScanTray, go to Settings and tap <strong>Restore purchases</strong> in the ScanTray Pro section.</p>
+  </details>
+
+  <details>
+    <summary>What do I get for free?</summary>
+    <p>Every feature works for free, with 15 new pages a month. Documents you already have are never locked, and you can always open, export and share them. ScanTray Pro removes the monthly limit.</p>
+  </details>
+
+  <details>
+    <summary>How do I move my documents to a new phone?</summary>
+    <ul>
+      <li><strong>iPhone to iPhone:</strong> set up the new iPhone from an iCloud backup (or an encrypted computer backup) of the old one, and your documents come back.</li>
+      <li><strong>Any phone:</strong> on the old phone, go to Settings and tap <strong>Back up library</strong>, then save the file somewhere you can reach from the new phone, such as a cloud drive or email. On the new phone, install ScanTray, go to Settings and tap <strong>Restore backup</strong>. You'll need the backup passphrase.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>I forgot a locked document's password.</summary>
+    <p>It can't be recovered, by us or by anyone else. That is what keeps a locked document private.</p>
+  </details>
+
+  <details>
+    <summary>I forgot my app passcode.</summary>
+    <p>After 5 wrong tries ScanTray makes you wait before the next one, starting at 30 seconds and growing up to an hour. If Face ID or fingerprint unlock is turned on, use it to open ScanTray. Then, in Settings, turn the passcode off (Face ID or your fingerprint confirms it) and turn it on again with a new one.</p>
+    <p>Otherwise the passcode can't be reset. You can delete and reinstall ScanTray, then restore your documents from a ScanTray backup file. On iPhone, restoring the phone from an iCloud backup also brings them back. Tap <strong>Forgot passcode?</strong> on the lock screen for these steps.</p>
+  </details>
+
+  <details>
+    <summary>Translation says it needs a connection.</summary>
+    <p>Each language is downloaded once, the first time you use it. Connect to the internet, translate once, and it works offline from then on.</p>
+  </details>
+
+  <details>
+    <summary>Why can't I save a page to Photos on my Android phone?</summary>
+    <p>Saving to Photos needs Android 11 or later. On older phones, tap Share and save the page from there.</p>
+  </details>
+
+  <details>
+    <summary>Send to computer doesn't connect.</summary>
+    <p>Make sure the phone and the computer are on the same Wi-Fi network, then type the address ScanTray shows into the computer's browser. Some guest or office networks block devices from reaching each other; a home network or a phone hotspot usually works.</p>
+  </details>
+
+  <details>
+    <summary>Does ScanTray upload my documents?</summary>
+    <p>No. Everything happens on your phone, and there is no ScanTray account or server. Read the <a href="/scantray/privacy/">privacy policy</a> for details.</p>
+  </details>
+
+  <footer>
+    <a href="/scantray/privacy/">Privacy Policy</a> ·
+    <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">Terms of Use (iPhone)</a> ·
+    Cross Trading LLC
+  </footer>
+</main>
+</body>
+</html>
